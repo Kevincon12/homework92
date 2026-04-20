@@ -1,57 +1,61 @@
-import { useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import type { RootState } from "../../app/store";
+import { useState } from "react";
 import {
-    setConnected,
-    setMessages,
-    addMessage,
-    setUsers
-} from "./chatSlice";
+    Box,
+    Paper,
+    Typography,
+    TextField,
+    Button
+} from "@mui/material";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../app/store";
 
 const ChatPage = () => {
-    const dispatch = useDispatch();
-    const token = useSelector((state: RootState) => state.auth.token);
 
-    const ws = useRef<WebSocket | null>(null);
+    const messages = useSelector((state: RootState) => state.chat.messages);
+    const users = useSelector((state: RootState) => state.chat.users);
 
-    useEffect(() => {
-        ws.current = new WebSocket("ws://localhost:8000");
+    const [text, setText] = useState("");
 
-        ws.current.onopen = () => {
-            dispatch(setConnected(true));
+    const sendMessage = () => {
 
-            ws.current?.send(JSON.stringify({
-                type: "auth",
-                payload: token
-            }));
-        };
+        setText("");
+    };
 
-        ws.current.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+    return (
+        <Box sx={{ display: "flex", height: "calc(100vh - 60px)" }}>
 
-            if (data.type === "auth_success") {
-                dispatch(setMessages(data.payload.messages));
-            }
+            <Paper sx={{ width: 250, p: 2, borderRight: "1px solid #ddd" }}>
+                <Typography variant="h6">Online users</Typography>
 
-            if (data.type === "new_message") {
-                dispatch(addMessage(data.payload));
-            }
+                {users.map((u, i) => (
+                    <Typography key={i}>{u.username}</Typography>
+                ))}
+            </Paper>
 
-            if (data.type === "users") {
-                dispatch(setUsers(data.payload));
-            }
-        };
+            <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
-        ws.current.onclose = () => {
-            dispatch(setConnected(false));
-        };
+                <Box sx={{ flex: 1, p: 2, overflowY: "auto" }}>
+                    {messages.map((m, i) => (
+                        <Box key={i} sx={{ mb: 1 }}>
+                            <b>{m.username}:</b> {m.message}
+                        </Box>
+                    ))}
+                </Box>
 
-        return () => {
-            ws.current?.close();
-        };
-    }, [dispatch, token]);
-
-    return <div>CHAT UI SOON</div>;
+                <Box sx={{ display: "flex", gap: 1, p: 2, borderTop: "1px solid #ddd" }}>
+                    <TextField
+                        fullWidth
+                        value={text}
+                        onChange={e => setText(e.target.value)}
+                        placeholder="Type message..."
+                    />
+                    <Button variant="contained" onClick={sendMessage}>
+                        Send
+                    </Button>
+                </Box>
+            </Box>
+        </Box>
+    );
 };
 
 export default ChatPage;
