@@ -2,6 +2,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "./app/store";
 import AuthPage from "./features/auth/AuthPage";
 import { logout } from "./features/auth/authSlice";
+import ChatPage from "./features/chat/ChatPage.tsx";
 
 const App = () => {
     const dispatch = useDispatch();
@@ -30,7 +31,7 @@ const App = () => {
                 </div>
             </div>
 
-            <div>CHAT WILL BE HERE</div>
+            <ChatPage />
         </div>
     );
 };
